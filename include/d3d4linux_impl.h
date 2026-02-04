@@ -142,6 +142,10 @@ struct d3d4linux
                         var.m_default_value.resize(var.m_desc.Size);
                         p.read_raw(var.m_default_value.data(), var.m_desc.Size);
                     }
+
+                    // Read D3D11_SHADER_TYPE_DESC for this variable
+                    p.read_raw(&var.m_type.m_desc, sizeof(var.m_type.m_desc));
+                    var.m_type.m_name = p.read_string();
                 }
             }
 
@@ -251,7 +255,16 @@ private:
 
                     char const *wine_var = getenv("D3D4LINUX_WINE");
                     if (!wine_var)
+                    {
+                        // Try Wine 11+ path first, then fall back to wine64
                         wine_var = D3D4LINUX_WINE;
+                        if (access(wine_var, X_OK) != 0)
+                        {
+#if defined(D3D4LINUX_WINE_FALLBACK)
+                            wine_var = D3D4LINUX_WINE_FALLBACK;
+#endif
+                        }
+                    }
 
                     close(pipe_read[0]);
                     close(pipe_read[1]);
@@ -318,4 +331,3 @@ private:
         pid_t m_pid;
     };
 };
-

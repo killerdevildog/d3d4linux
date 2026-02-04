@@ -155,6 +155,7 @@ int main(void)
                 D3D11_SHADER_INPUT_BIND_DESC bind_desc;
                 D3D11_SHADER_VARIABLE_DESC variable_desc;
                 D3D11_SHADER_BUFFER_DESC buffer_desc;
+                D3D11_SHADER_TYPE_DESC type_desc;
                 D3D11_SHADER_DESC shader_desc;
 
                 ID3D11ShaderReflection *reflector = (ID3D11ShaderReflection *)object;
@@ -212,6 +213,12 @@ int main(void)
                         p.write_i64(variable_desc.DefaultValue ? 1 : 0);
                         if (variable_desc.DefaultValue)
                             p.write_raw(variable_desc.DefaultValue, variable_desc.Size);
+
+                        /* Serialize D3D11_SHADER_TYPE_DESC for this variable */
+                        ID3D11ShaderReflectionType *type = var->GetType();
+                        type->GetDesc(&type_desc);
+                        p.write_raw(&type_desc, sizeof(type_desc));
+                        p.write_string(type_desc.Name ? type_desc.Name : "");
                     }
                 }
             }
@@ -295,4 +302,3 @@ int main(void)
 
     return EXIT_SUCCESS;
 }
-
