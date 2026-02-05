@@ -88,12 +88,12 @@ struct d3d4linux
         p.write_i64(D3D4LINUX_OP_REFLECT);
         p.write_i64(SrcDataSize);
         p.write_raw(pSrcData, SrcDataSize);
-        p.write_i64(pInterface);
+        p.write_i64(D3D4LINUX_IID_SHADER_REFLECTION);
         p.write_i64(D3D4LINUX_FINISHED);
 
         HRESULT ret = p.read_i64();
 
-        if (SUCCEEDED(ret) && pInterface == IID_ID3D11ShaderReflection)
+        if (SUCCEEDED(ret) ) //&& pInterface == IID_ID3D11ShaderReflection)
         {
             ID3D11ShaderReflection *r = new ID3D11ShaderReflection;
 
@@ -135,6 +135,7 @@ struct d3d4linux
                     ID3D11ShaderReflectionVariable &var = buf.m_variables.back();
 
                     p.read_raw(&var.m_desc, sizeof(var.m_desc));
+                    var.m_desc.uFlags |= D3D_SVF_USED;  // Force all uniforms to be marked as used
                     var.m_strings.push_back(p.read_string());
                     var.m_has_default = p.read_i64();
                     if (var.m_has_default)
